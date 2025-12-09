@@ -36,9 +36,8 @@ Run the three ".ipynb" files in the Visualization folder (In the line "df = pd.r
 Note: The output file will be located in "Visualization/PNG".
 
 # 5. Performance
-This model achieves the following performance on the HNRNPC and U2AF2 datasets:
+This model achieves the following performance on the HNRNPC dataset:
 ```
-【HNRNPC】
 AUROC:       0.8759
 AUPRC:       0.8911
 Accuracy:    0.8133
@@ -47,14 +46,4 @@ Sensitivity: 0.7962
 F1-Score:    0.8170
 Specificity: 0.8322
 MCC:         0.6277
-
-【U2AF2】
-AUROC:       0.8509
-AUPRC:       0.8721
-Accuracy:    0.7800
-Precision:   0.7791
-Sensitivity: 0.8089
-F1-Score:    0.7938
-Specificity: 0.7483
-MCC:         0.5587
 ```
