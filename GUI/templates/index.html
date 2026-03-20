@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Home - RNA Binding Protein Prediction System{% endblock %}
+
+{% block extra_head %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .feature-card {
+        transition: transform 0.3s;
+        height: 100%;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .upload-area {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        height: 100%;
+    }
+    .sample-btn {
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Area -->
+<div class="hero-section text-center">
+    <h1 class="display-4 fw-bold mb-4">RNA-binding Protein Intelligent Prediction Platform</h1>
+    <p class="lead mb-4">Based on deep learning and knowledge graphs, it can rapidly predict the interactions between RNA and proteins, and provide suggestions for experimental verification.</p>
+</div>
+
+<!-- Function Feature Card -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-3">
+        <div class="card feature-card">
+            <div class="card-body text-center">
+                <i class="bi bi-cpu fs-1 text-primary"></i>
+                <h5 class="card-title mt-3">Advanced deep learning model</h5>
+                <p class="card-text">Combining the Transformer and CNN architectures, it can precisely capture sequence and structural features.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card feature-card">
+            <div class="card-body text-center">
+                <i class="bi bi-book fs-1 text-success"></i>
+                <h5 class="card-title mt-3">Knowledge graph enhancement</h5>
+                <p class="card-text">Integrate the knowledge base of experimental methods to provide interpretable experimental suggestions for the prediction results</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card feature-card">
+            <div class="card-body text-center">
+                <i class="bi bi-upload fs-1 text-info"></i>
+                <h5 class="card-title mt-3">Easy file upload</h5>
+                <p class="card-text">Support batch upload in TSV format, and quickly obtain prediction results and explanations</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dual-function area: Prediction and Explanation -->
+<div class="row g-4">
+    <!-- Left side: Predicted upload -->
+    <div class="col-md-6">
+        <div class="upload-area">
+            <i class="bi bi-cloud-upload fs-1 text-primary mb-3"></i>
+            <h3 class="mb-3">🔬 Predict</h3>
+            <p class="text-muted mb-3">Upload the original TSV file for prediction (required columns: sequence, structure, pairing_probabilities)</p>
+            <form action="/predict" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input class="form-control" type="file" name="file" accept=".tsv,.txt" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-play-circle"></i> Start the prediction
+                </button>
+            </form>
+            <!-- Download Sample File Button -->
+            <div class="sample-btn">
+                <a href="/download_sample" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-download"></i> Download Sample File
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Right side: Explanation of upload -->
+    <div class="col-md-6">
+        <div class="upload-area">
+            <i class="bi bi-chat-dots fs-1 text-success mb-3"></i>
+            <h3 class="mb-3">💬 Explanation</h3>
+            <p class="text-muted mb-3">Upload the TSV file that contains the prediction results to generate the explanation (required columns: sequence, predicted_probability, predicted_label)</p>
+            <form action="/explain_predictions" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input class="form-control" type="file" name="file" accept=".tsv,.txt" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="bi bi-chat"></i> Generate explanation
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
