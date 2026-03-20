@@ -1,0 +1,5 @@
+EMSA (Electrophoretic Mobility Shift Assay) is a common method to detect protein-RNA interactions. It involves incubating purified protein with labeled RNA, then running on a native gel. A shift in mobility indicates binding. Expected result: positive samples show a slower migrating band.
+CLIP-seq (Crosslinking and Immunoprecipitation followed by sequencing) identifies binding sites of RNA-binding proteins in vivo. Cells are crosslinked, the protein is immunoprecipitated, bound RNA fragments are sequenced. Peaks indicate binding regions. Positive samples expected to have significant peaks.
+Mutagenesis: To validate a specific k-mer motif, mutate it (e.g., change nucleotides) in the RNA sequence and test binding via EMSA. Reduced binding confirms the motif's importance.
+RNA pull-down: Biotin-labeled RNA is incubated with cell lysate, streptavidin beads pull down RNA-protein complexes. Bound protein is detected by western blot. Positive samples show protein band.
+Surface Plasmon Resonance (SPR): Real-time binding kinetics can be measured by immobilizing RNA and flowing protein. Association and dissociation rates indicate affinity.

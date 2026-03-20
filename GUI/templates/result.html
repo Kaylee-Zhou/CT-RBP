@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction results{% endblock %}
+
+{% block extra_head %}
+<style>
+    .table-responsive {
+        max-height: 500px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+    }
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background: #f8f9fa;
+        z-index: 10;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .table td {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .table td:hover {
+        overflow: visible;
+        white-space: normal;
+        word-wrap: break-word;
+        background-color: #f8f9fa;
+        position: relative;
+        z-index: 5;
+    }
+    .index-col {
+        width: 50px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h3 class="mb-0"><i class="bi bi-table"></i> Prediction results (total of {{ num_rows }} items)</h3>
+        <a href="/download_result/{{ session_id }}" class="btn btn-light btn-sm">
+            <i class="bi bi-download"></i> Download TSV
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            {{ table|safe }}
+        </div>
+        <hr>
+        <h4>View Explanation</h4>
+        <form id="explain-form" class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label for="row" class="col-form-label">Select row index (starting from 1):</label>
+            </div>
+            <div class="col-auto">
+                <input type="number" id="row" name="row" class="form-control" min="1" max="{{ num_rows }}" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-chat-dots"></i> Explanation
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="card-footer">
+        <a href="/" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Return to the home page</a>
+    </div>
+</div>
+<script>
+    document.getElementById('explain-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const row = document.getElementById('row').value;
+        // Convert to 0-based indexing
+        const rowIdx = parseInt(row) - 1;
+        window.location.href = `/explain/{{ session_id }}/${rowIdx}`;
+    });
+</script>
+{% endblock %}

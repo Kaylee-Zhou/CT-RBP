@@ -1,5 +1,14 @@
 # CT-RBP
-This repository contains the implementation of CT-RBP, which is a model based on CNN and Transformer, used to predict the interactions between RNA and RBP.
+CT-RBP is a model based on convolutional neural network (CNN) and transformer, used to predict the interaction between RNA and RBP.
+
+This repository contains:
+
+1. Preprocessing.ipynb and Preprocessing_Dataset2.ipynb: The codes for preprocessing the .fa file data into the .tsv format.
+2. Visualization folder: The codes for visualizing the .tsv files.
+3. CT-RBP.ipynb and CT-RBP_Dataset2.ipynb: The implementation code of the CT-RBP model and the SHAP analysis code.
+4. RAG.ipynb: The code for analyzing model results  and providing experimental suggestions using advanced retrieval generation technology.
+5. GUI folder: A GUI website application that integrates model prediction and RAG functions.
+6. Document folder: The documentations of this project.
 
 # 1. Dependencies
 This model is designed to operate in the following environment:
@@ -17,6 +26,7 @@ Install the required packages by running:
 git clone https://github.com/Kaylee-Zhou/CT-RBP
 cd CT-RBP
 python3 -m pip install -r requirements.txt
+conda install -c bioconda viennarna
 ```
 
 # 3. Run the model
@@ -37,13 +47,58 @@ Note: The output file will be located in "Visualization/PNG".
 
 # 5. Performance
 This model achieves the following performance on the HNRNPC dataset:
+
 ```
-AUROC:       0.8759
-AUPRC:       0.8911
-Accuracy:    0.8133
-Precision:   0.8389
-Sensitivity: 0.7962
-F1-Score:    0.8170
-Specificity: 0.8322
-MCC:         0.6277
+AUROC:       0.8626
+AUPRC:       0.8826
+Accuracy:    0.7933
+Precision:   0.8146
+Sensitivity: 0.7834
+F1-Score:    0.7987
+Specificity: 0.8042
+MCC:         0.5870
 ```
+
+On the U2AF2 dataset:
+
+```
+AUROC:       0.8332
+AUPRC:       0.8580
+Accuracy:    0.7533
+Precision:   0.7546
+Sensitivity: 0.7834
+F1-Score:    0.7687
+Specificity: 0.7203
+MCC:         0.5051
+```
+
+Note: More details please check at "CT-RBP.ipynb" and "CT-RBP_Dataset2.ipynb".
+
+# 6. Run RAG file
+
+```
+Open the "Rag.ipynb" file and replace the last block code: test_input = """""" to your own.
+```
+
+Note: Remember to upload the API_KEY if it does not work.
+
+# 7. Run GUI website application
+
+```
+Open the GUI folder as project. Select the "app.py" file and run it.
+```
+
+Note: Remember to upload the API_KEY if it does not work.
+
+# 8. Documents
+
+```
+All the documents should be submmitted are stored in the "Document" folder.
+```
+
+# 9. Others
+
+```
+The datasets used in these project are from: http://www.csbio.sjtu.edu.cn/bioinf/RBPsuite/dataset_new.html#start
+```
+
