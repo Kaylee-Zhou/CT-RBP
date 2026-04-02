@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 encoder = SentenceTransformer("./all-MiniLM-L6-v2")
 
 # Load the knowledge base
-KNOWLEDGE_FILE = "experiments.txt"
+KNOWLEDGE_FILE = "knowledge_base.txt"
 if os.path.exists(KNOWLEDGE_FILE):
     with open(KNOWLEDGE_FILE, "r", encoding="utf-8") as f:
         docs = [line.strip() for line in f if line.strip()]

@@ -7,7 +7,7 @@ This repository contains:
 2. Visualization folder: The codes for visualizing the .tsv files.
 3. CT-RBP.ipynb and CT-RBP_Dataset2.ipynb: The implementation code of the CT-RBP model and the SHAP analysis code.
 4. RAG.ipynb: The code for analyzing model results  and providing experimental suggestions using advanced retrieval generation technology.
-5. GUI folder: A GUI website application that integrates model prediction and RAG functions.
+5. GUI folder: A GUI website application that integrates model prediction, SHAP, and RAG functions.
 6. Document folder: The documentations of this project.
 
 # 1. Dependencies
@@ -49,27 +49,27 @@ Note: The output file will be located in "Visualization/PNG".
 This model achieves the following performance on the HNRNPC dataset:
 
 ```
-AUROC:       0.8626
-AUPRC:       0.8826
+AUROC:       0.8681
+AUPRC:       0.8897
 Accuracy:    0.7933
-Precision:   0.8146
-Sensitivity: 0.7834
-F1-Score:    0.7987
-Specificity: 0.8042
-MCC:         0.5870
+Precision:   0.8065
+Sensitivity: 0.7962
+F1-Score:    0.8013
+Specificity: 0.7902
+MCC:         0.5861
 ```
 
 On the U2AF2 dataset:
 
 ```
-AUROC:       0.8332
-AUPRC:       0.8580
-Accuracy:    0.7533
-Precision:   0.7546
-Sensitivity: 0.7834
-F1-Score:    0.7687
-Specificity: 0.7203
-MCC:         0.5051
+AUROC:       0.8486
+AUPRC:       0.8724
+Accuracy:    0.7867
+Precision:   0.7627
+Sensitivity: 0.8599
+F1-Score:    0.8084
+Specificity: 0.7063
+MCC:         0.5749
 ```
 
 Note: More details please check at "CT-RBP.ipynb" and "CT-RBP_Dataset2.ipynb".
