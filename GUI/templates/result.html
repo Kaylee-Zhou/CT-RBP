@@ -70,6 +70,44 @@
         <a href="/" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Return to the home page</a>
     </div>
 </div>
+
+<hr>
+<h4>SHAP Model Interpretability Analysis</h4>
+<button id="shap-btn" class="btn btn-info">Download SHAP analysis images (ZIP)</button>
+<div id="shap-loading" style="display:none;" class="mt-3">Generating SHAP plots... Please wait a moment...</div>
+
+<script>
+document.getElementById('shap-btn').addEventListener('click', function() {
+    const btn = this;
+    btn.disabled = true;
+    const loadingDiv = document.getElementById('shap-loading');
+    loadingDiv.style.display = 'block';
+
+    fetch(`/download_shap/{{ session_id }}`, { method: 'POST' })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'shap_analysis.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            loadingDiv.style.display = 'none';
+            btn.disabled = false;
+        })
+        .catch(error => {
+            alert('Download failed: ' + error);
+            loadingDiv.style.display = 'none';
+            btn.disabled = false;
+        });
+});
+</script>
+
 <script>
     document.getElementById('explain-form').addEventListener('submit', function(e) {
         e.preventDefault();

@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+import io
+
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file, flash
 import pandas as pd
 import uuid
@@ -140,6 +142,28 @@ def explain_predictions():
         logger.error(f"Explanation: File processing failed: {traceback.format_exc()}")
         flash(f'Error occurred while processing the explanatory file: {str(e)}', 'danger')
         return redirect(url_for('index'))
+
+@app.route('/download_shap/<session_id>', methods=['POST'])
+def download_shap(session_id):
+    temp_path = os.path.join(TEMP_DIR, f'{session_id}.csv')
+    if not os.path.exists(temp_path):
+        return jsonify({'status': 'failed', 'error': 'Session expired'}), 404
+    df = pd.read_csv(temp_path, sep='\t')
+    if 'predicted_probability' not in df.columns:
+        return jsonify({'status': 'failed', 'error': 'No predictions found, please run prediction first'}), 400
+    predictions = df['predicted_probability'].values
+    try:
+        from shap_utils import generate_shap_zip
+        zip_data = generate_shap_zip(df, kmer_vocab, predictions)
+        return send_file(
+            io.BytesIO(zip_data),
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name='shap_analysis.zip'
+        )
+    except Exception as e:
+        logger.error(f"SHAP Generation failed: {traceback.format_exc()}")
+        return jsonify({'status': 'failed', 'error': str(e)}), 500
 
 @app.route('/explain/<session_id>/<int:row_idx>')
 def explain_page(session_id, row_idx):
