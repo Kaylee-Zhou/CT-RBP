@@ -1,137 +1,1177 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CT-RBP - RNA Binding Protein Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- JSZip for client-side ZIP generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body {
+            zoom: 0.75;
+            -moz-transform: scale(0.75);
+            -moz-transform-origin: top center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
 
-{% block title %}Home - RNA Binding Protein Prediction System{% endblock %}
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-{% block extra_head %}
-<style>
-    .hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 4rem 2rem;
-        border-radius: 1rem;
-        margin-bottom: 2rem;
-    }
-    .feature-card {
-        transition: transform 0.3s;
-        height: 100%;
-    }
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    .upload-area {
-        background: #f8f9fa;
-        border: 2px dashed #dee2e6;
-        border-radius: 1rem;
-        padding: 2rem;
-        text-align: center;
-        height: 100%;
-    }
-    .sample-btn {
-        margin-top: 1rem;
-    }
-</style>
-{% endblock %}
+        body {
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+            padding-bottom: 3rem;
+        }
 
-{% block content %}
-<!-- Hero Area -->
-<div class="hero-section text-center">
-    <h1 class="display-4 fw-bold mb-4">RNA-binding Protein Intelligent Prediction Platform</h1>
-    <p class="lead mb-4">Based on deep learning and knowledge graphs, it can rapidly predict the interactions between RNA and proteins, and provide suggestions for experimental verification.</p>
-</div>
+        /* Hero Section */
+        .hero-section {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 4rem 2rem;
+            border-radius: 1.5rem;
+            margin: 2rem 0 3rem 0;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
 
-<div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card border-primary">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-graph-up"></i> Model performance</h4>
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-section h1 {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            font-size: 2.8rem;
+        }
+
+        .hero-section p {
+            font-weight: 300;
+            font-size: 1.2rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            padding: 0.5rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: #718096;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .tab-btn:hover {
+            background: #f7fafc;
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            background: white;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-smooth);
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .feature-card:nth-child(2)::before {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .feature-card:nth-child(3)::before {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            transition: var(--transition-smooth);
+        }
+
+        .feature-card:nth-child(1) .feature-icon {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            color: #667eea;
+        }
+
+        .feature-card:nth-child(2) .feature-icon {
+            background: linear-gradient(135deg, #4facfe20 0%, #00f2fe20 100%);
+            color: #4facfe;
+        }
+
+        .feature-card:nth-child(3) .feature-icon {
+            background: linear-gradient(135deg, #43e97b20 0%, #38f9d720 100%);
+            color: #43e97b;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .feature-text {
+            color: #718096;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        /* Dataset Source Card */
+        .dataset-card {
+            background: white;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .dataset-card .card-header {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 1rem;
+            color: white;
+        }
+
+        .dataset-btn {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Upload Area */
+        .upload-container {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary-gradient);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            color: #667eea;
+        }
+
+        .upload-title {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        .upload-description {
+            color: #718096;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            border: 2px dashed #cbd5e0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            width: 100%;
+            background: #f7fafc;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+
+        .btn-predict {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .btn-sample {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: #4a5568;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Performance Metrics */
+        .metric-card {
+            background: white;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .metric-card .card-header {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 1rem;
+            color: white;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Performance Images - Vertical Cards like SHAP */
+        .performance-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .perf-img-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+        .perf-img-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0;
+            padding: 0;
+            object-fit: contain;
+            background-color: #f8f9fa;
+        }
+        .perf-img-title {
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: center;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            margin: 0;
+            font-size: 1rem;
+        }
+        .perf-img-subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 0.8rem;
+            margin-top: -0.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Results Card */
+        .results-card {
+            background: white;
+            border: none;
+            border-radius: 1.5rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .results-card .card-header {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 1rem 1.5rem;
+            color: white;
+        }
+
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+
+        .table {
+            margin-bottom: 0;
+            width: 100%;
+            font-size: 0.85rem;
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            color: #2d3748;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 0.75rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #edf2f7;
+            color: #4a5568;
+            word-break: break-word;
+        }
+
+        .btn-action {
+            background: white;
+            border: 2px solid white;
+            color: #2d3748;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        /* Explanation Form */
+        .explain-form-container {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .explain-input {
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-explain {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Explanation Result */
+        .explain-result {
+            display: none;
+            margin-top: 1.5rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .explain-result.active {
+            display: block;
+        }
+
+        .explain-card {
+            background: white;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .explain-card .card-header {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 1rem;
+            color: white;
+        }
+
+        .explain-content pre {
+            background: #f7fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .knowledge-list .list-group-item {
+            border: none;
+            border-left: 3px solid #667eea;
+            background: #f7fafc;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* SHAP Gallery - Vertical */
+        .shap-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .shap-img-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+        .shap-img-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0;
+            padding: 0;
+            object-fit: contain;
+            background-color: #f8f9fa;
+        }
+        .shap-img-title {
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: center;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .loading-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .spinner-border-lg {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3rem;
+            color: #667eea;
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        /* Section Headers */
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.25rem;
+            font-size: 1.5rem;
+        }
+
+        .section-subtitle {
+            color: #718096;
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            .upload-container {
+                padding: 1.5rem;
+            }
+            .tab-navigation {
+                flex-direction: column;
+            }
+            .tab-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner-border spinner-border-lg" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-md-3"><strong>AUROC</strong><br>0.8681</div>
-                    <div class="col-md-3"><strong>AUPRC</strong><br>0.8897</div>
-                    <div class="col-md-3"><strong>Accuracy</strong><br>0.7933</div>
-                    <div class="col-md-3"><strong>Precision</strong><br>0.8065</div>
-                    <div class="col-md-3"><strong>Sensitivity</strong><br>0.7962</div>
-                    <div class="col-md-3"><strong>F1-Score</strong><br>0.8013</div>
-                    <div class="col-md-3"><strong>Specificity</strong><br>0.7902</div>
-                    <div class="col-md-3"><strong>MCC</strong><br>0.5861</div>
+            <p class="loading-text" id="loading-text">Processing...</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Hero Section -->
+        <div class="hero-section text-center">
+            <h1 class="display-4 mb-4">RNA-binding Protein Intelligent Prediction Platform</h1>
+            <p class="lead mb-0">Advanced deep learning meets knowledge graphs for rapid RNA-protein interaction prediction and experimental validation guidance</p>
+        </div>
+
+        <!-- Key Features -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <h5 class="feature-title">Advanced Deep Learning</h5>
+                    <p class="feature-text">Combining Transformer and CNN architectures to precisely capture sequence and structural features</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <h5 class="feature-title">Knowledge Graph Enhanced</h5>
+                    <p class="feature-text">Integrated experimental methods knowledge base providing interpretable validation suggestions</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h5 class="feature-title">Fast Batch Processing</h5>
+                    <p class="feature-text">Support TSV format batch uploads with rapid prediction results and comprehensive explanations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dataset Source -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dataset-card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="bi bi-database"></i> Dataset Source</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <p class="mb-2" style="color: #4a5568; line-height: 1.8;">
+                                    The dataset used in this project is sourced from <strong>RBPsuite</strong>, a comprehensive database for RNA-binding protein prediction and analysis.
+                                </p>
+                                <p class="mb-0" style="color: #718096; line-height: 1.8;">
+                                    Access the original dataset, documentation, and additional resources through the official RBPsuite portal.
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                <a href="http://www.csbio.sjtu.edu.cn/bioinf/RBPsuite/dataset_new.html#start"
+                                   target="_blank"
+                                   class="btn dataset-btn">
+                                    <i class="bi bi-box-arrow-up-right me-2"></i>Visit RBPsuite
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="predict">
+                <i class="bi bi-play-circle"></i>Predict
+            </button>
+            <button class="tab-btn" data-tab="performance">
+                <i class="bi bi-bar-chart-line"></i>Performance
+            </button>
+        </div>
+
+        <!-- Predict Section -->
+        <div id="predict" class="content-section active">
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="upload-container">
+                        <div class="text-center">
+                            <div class="upload-icon">
+                                <i class="bi bi-cloud-upload"></i>
+                            </div>
+                            <h3 class="upload-title">Predict RNA-Protein Interactions</h3>
+                            <p class="upload-description">
+                                Upload your TSV file containing RNA sequences, structures, and pairing probabilities.<br>
+                                Required columns: <code>sequence</code>, <code>structure</code>, <code>pairing_probabilities</code>
+                            </p>
+                        </div>
+
+                        <form id="predict-form" enctype="multipart/form-data">
+                            <div class="file-input-wrapper mb-3">
+                                <input class="form-control" type="file" id="predict-file" name="file" accept=".tsv,.txt" required>
+                            </div>
+                            <button type="submit" class="btn btn-predict">
+                                <i class="bi bi-play-circle me-2"></i>Start Prediction
+                            </button>
+                        </form>
+
+                        <a href="/download_sample" class="btn btn-sample">
+                            <i class="bi bi-download me-2"></i>Download Sample File
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-section" style="display:none;">
+                <div class="results-card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h3 class="mb-0"><i class="bi bi-table"></i> Prediction Results</h3>
+                        <div class="d-flex gap-2">
+                            <button id="download-result-btn" class="btn btn-action">
+                                <i class="bi bi-download me-1"></i> Download TSV
+                            </button>
+                            <button id="shap-download-btn" class="btn btn-action">
+                                <i class="bi bi-download me-1"></i> Download SHAP ZIP
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="table-responsive" id="results-table">
+                            <!-- Table will be inserted here -->
+                        </div>
+
+                        <!-- Explanation Form -->
+                        <div class="explain-form-container">
+                            <h5 class="mb-3"><i class="bi bi-chat-dots"></i> Get Detailed Explanation</h5>
+                            <form id="explain-form" class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label for="row-index" class="form-label fw-semibold">Row Index (starting from 1)</label>
+                                    <input type="number" id="row-index" name="row" class="form-control explain-input" min="1" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-explain w-100">
+                                        <i class="bi bi-magic me-2"></i>Generate Explanation
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Explanation Result -->
+                        <div id="explain-result" class="explain-result">
+                            <div class="explain-card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-chat-quote"></i> AI-Powered Explanation</h5>
+                                </div>
+                                <div class="card-body p-4" id="explain-content">
+                                    <!-- Content will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHAP Gallery -->
+                <div id="shap-section" class="results-card" style="display:none;">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="bi bi-graph-up"></i> SHAP Analysis</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="shap-gallery" id="shap-gallery">
+                            <!-- SHAP images will be loaded here automatically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Section -->
+        <div id="performance" class="content-section">
+            <!-- Model Performance Metrics -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="metric-card">
+                        <div class="card-header">
+                            <h4 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Model Performance Metrics</h4>
+                        </div>
+                        <div class="card-body py-4">
+                            <div class="row g-4">
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.8682</div>
+                                    <div class="metric-label mt-2">AUROC</div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.8747</div>
+                                    <div class="metric-label mt-2">AUPRC</div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.8020</div>
+                                    <div class="metric-label mt-2">Accuracy</div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.8084</div>
+                                    <div class="metric-label mt-2">Precision</div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.8031</div>
+                                    <div class="metric-label mt-2">Sensitivity</div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.8058</div>
+                                    <div class="metric-label mt-2">F1-Score</div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.8008</div>
+                                    <div class="metric-label mt-2">Specificity</div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center">
+                                    <div class="metric-value">0.6039</div>
+                                    <div class="metric-label mt-2">MCC</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Curves - Vertical Cards like SHAP -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-header">
+                        <h3 class="section-title"><i class="bi bi-bar-chart-line"></i> Training Curves & Evaluation</h3>
+                        <p class="section-subtitle">Comprehensive model training visualization</p>
+                    </div>
+
+                    <div class="performance-gallery">
+                        <div class="perf-img-card">
+                            <img src="{{ url_for('static', filename='performance/accuracy_curves.png') }}" alt="Accuracy Curves">
+                            <div class="perf-img-title">Accuracy Curves</div>
+                            <div class="perf-img-subtitle">Training and Validation Accuracy over epochs</div>
+                        </div>
+                        <div class="perf-img-card">
+                            <img src="{{ url_for('static', filename='performance/confusion_matrix.png') }}" alt="Confusion Matrix">
+                            <div class="perf-img-title">Confusion Matrix</div>
+                            <div class="perf-img-subtitle">Classification performance breakdown</div>
+                        </div>
+                        <div class="perf-img-card">
+                            <img src="{{ url_for('static', filename='performance/loss_curves.png') }}" alt="Loss Curves">
+                            <div class="perf-img-title">Loss Curves</div>
+                            <div class="perf-img-subtitle">Training and Validation Loss over epochs</div>
+                        </div>
+                        <div class="perf-img-card">
+                            <img src="{{ url_for('static', filename='performance/pr_curve.png') }}" alt="PR Curve">
+                            <div class="perf-img-title">PR Curve</div>
+                            <div class="perf-img-subtitle">Precision-Recall Analysis</div>
+                        </div>
+                        <div class="perf-img-card">
+                            <img src="{{ url_for('static', filename='performance/roc_curve.png') }}" alt="ROC Curve">
+                            <div class="perf-img-title">ROC Curve</div>
+                            <div class="perf-img-subtitle">Receiver Operating Characteristic</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Function Feature Card -->
-<div class="row mb-5">
-    <div class="col-md-4 mb-3">
-        <div class="card feature-card">
-            <div class="card-body text-center">
-                <i class="bi bi-cpu fs-1 text-primary"></i>
-                <h5 class="card-title mt-3">Advanced deep learning model</h5>
-                <p class="card-text">Combining the Transformer and CNN architectures, it can precisely capture sequence and structural features.</p>
-            </div>
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <p class="mb-2">&copy; 2026 RNA Binding Protein Prediction System. All rights reserved.</p>
+            <p class="small text-muted mb-0">Intelligent prediction platform based on deep learning and knowledge graph</p>
         </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="card feature-card">
-            <div class="card-body text-center">
-                <i class="bi bi-book fs-1 text-success"></i>
-                <h5 class="card-title mt-3">Knowledge graph enhancement</h5>
-                <p class="card-text">Integrate the knowledge base of experimental methods to provide interpretable experimental suggestions for the prediction results</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="card feature-card">
-            <div class="card-body text-center">
-                <i class="bi bi-upload fs-1 text-info"></i>
-                <h5 class="card-title mt-3">Easy file upload</h5>
-                <p class="card-text">Support batch upload in TSV format, and quickly obtain prediction results and explanations</p>
-            </div>
-        </div>
-    </div>
-</div>
+    </footer>
 
-<!-- Dual-function area: Prediction and Explanation -->
-<div class="row g-4">
-    <!-- Left side: Predicted upload -->
-    <div class="col-md-6">
-        <div class="upload-area">
-            <i class="bi bi-cloud-upload fs-1 text-primary mb-3"></i>
-            <h3 class="mb-3">🔬 Predict</h3>
-            <p class="text-muted mb-3">Upload the original TSV file for prediction (required columns: sequence, structure, pairing_probabilities)</p>
-            <form action="/predict" method="post" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <input class="form-control" type="file" name="file" accept=".tsv,.txt" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-play-circle"></i> Start the prediction
-                </button>
-            </form>
-            <!-- Download Sample File Button -->
-            <div class="sample-btn">
-                <a href="/download_sample" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-download"></i> Download Sample File
-                </a>
-            </div>
-        </div>
-    </div>
-    <!-- Right side: Explanation of upload -->
-    <div class="col-md-6">
-        <div class="upload-area">
-            <i class="bi bi-chat-dots fs-1 text-success mb-3"></i>
-            <h3 class="mb-3">💬 Explanation</h3>
-            <p class="text-muted mb-3">Upload the TSV file that contains the prediction results to generate the explanation (required columns: sequence, predicted_probability, predicted_label)</p>
-            <form action="/explain_predictions" method="post" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <input class="form-control" type="file" name="file" accept=".tsv,.txt" required>
-                </div>
-                <button type="submit" class="btn btn-success w-100">
-                    <i class="bi bi-chat"></i> Generate explanation
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    let currentSessionId = null;
+
+    function showLoading(text = 'Processing...') {
+        document.getElementById('loading-text').textContent = text;
+        document.getElementById('loading-overlay').classList.add('active');
+    }
+
+    function hideLoading() {
+        document.getElementById('loading-overlay').classList.remove('active');
+    }
+
+    // Tab navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            window.scrollTo({ top: document.querySelector('.tab-navigation').offsetTop - 20, behavior: 'smooth' });
+        });
+    });
+
+    // Prediction form
+    document.getElementById('predict-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('predict-file');
+        if (!fileInput.files.length) {
+            alert('Please select a file');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        showLoading('Running predictions... This may take a moment.');
+        try {
+            const response = await fetch('/predict', { method: 'POST', body: formData });
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Prediction failed: ${errText}`);
+            }
+            const result = await response.json();
+            if (result.status === 'success') {
+                currentSessionId = result.session_id;
+                document.getElementById('results-table').innerHTML = result.table_html;
+                document.getElementById('results-section').style.display = 'block';
+                document.getElementById('row-index').max = result.num_rows;
+                await generateAndDisplayShap();
+                setTimeout(() => {
+                    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            } else {
+                alert('Prediction failed: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    // Generate and Display SHAP
+    async function generateAndDisplayShap() {
+        if (!currentSessionId) return;
+        const shapSection = document.getElementById('shap-section');
+        const shapGallery = document.getElementById('shap-gallery');
+        shapSection.style.display = 'block';
+        shapGallery.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Generating SHAP analysis...</p></div>';
+        try {
+            const response = await fetch(`/generate_shap/${currentSessionId}`, { method: 'POST' });
+            if (!response.ok) throw new Error('SHAP generation failed');
+            const data = await response.json();
+            if (data.status === 'success') {
+                const images = data.images;
+                let html = '';
+                if (images.bar) html += `<div class="shap-img-card"><img src="data:image/png;base64,${images.bar}" alt="SHAP Bar Plot"><div class="shap-img-title">Feature Importance (Bar)</div></div>`;
+                if (images.summary) html += `<div class="shap-img-card"><img src="data:image/png;base64,${images.summary}" alt="SHAP Summary"><div class="shap-img-title">Feature Impact Distribution</div></div>`;
+                if (images.dependence) html += `<div class="shap-img-card"><img src="data:image/png;base64,${images.dependence}" alt="SHAP Dependence"><div class="shap-img-title">Top Feature Dependence (K-mer, Structure, Pairing Prob)</div></div>`;
+                if (images.force_highest) html += `<div class="shap-img-card"><img src="data:image/png;base64,${images.force_highest}" alt="SHAP Force Highest"><div class="shap-img-title">Force Plot - Highest Prediction</div></div>`;
+                if (images.force_lowest) html += `<div class="shap-img-card"><img src="data:image/png;base64,${images.force_lowest}" alt="SHAP Force Lowest"><div class="shap-img-title">Force Plot - Lowest Prediction</div></div>`;
+                if (images.waterfall_highest) html += `<div class="shap-img-card"><img src="data:image/png;base64,${images.waterfall_highest}" alt="SHAP Waterfall Highest"><div class="shap-img-title">Waterfall Plot - Highest Prediction</div></div>`;
+                if (images.waterfall_lowest) html += `<div class="shap-img-card"><img src="data:image/png;base64,${images.waterfall_lowest}" alt="SHAP Waterfall Lowest"><div class="shap-img-title">Waterfall Plot - Lowest Prediction</div></div>`;
+                shapGallery.innerHTML = html || '<div class="alert alert-warning">No SHAP images generated</div>';
+            } else {
+                shapGallery.innerHTML = `<div class="alert alert-danger">SHAP generation failed: ${data.error}</div>`;
+            }
+        } catch (error) {
+            shapGallery.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
+
+    // Download TSV result
+    document.getElementById('download-result-btn').addEventListener('click', function() {
+        if (!currentSessionId) {
+            alert('No prediction results available');
+            return;
+        }
+        window.location.href = `/download_result/${currentSessionId}`;
+    });
+
+    // Download SHAP ZIP - client-side using already loaded base64 images
+    document.getElementById('shap-download-btn').addEventListener('click', async function() {
+        const shapGallery = document.getElementById('shap-gallery');
+        const imgCards = shapGallery.querySelectorAll('.shap-img-card');
+        if (!imgCards.length) {
+            alert('No SHAP images available to download. Please wait for SHAP generation to complete.');
+            return;
+        }
+
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Packaging...';
+
+        try {
+            const zip = new JSZip();
+            for (let i = 0; i < imgCards.length; i++) {
+                const card = imgCards[i];
+                const img = card.querySelector('img');
+                const titleDiv = card.querySelector('.shap-img-title');
+                if (!img || !img.src || !img.src.startsWith('data:image/png;base64,')) continue;
+
+                const base64Data = img.src.split(',')[1];
+                const title = titleDiv ? titleDiv.innerText.trim() : `shap_image_${i+1}`;
+                const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
+                zip.file(filename, base64Data, { base64: true });
+            }
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(zipBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'shap_analysis.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            btn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Downloaded';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="bi bi-download me-1"></i> Download SHAP ZIP';
+                btn.disabled = false;
+            }, 2000);
+        } catch (error) {
+            console.error('ZIP creation failed:', error);
+            alert('Failed to create ZIP: ' + error.message);
+            btn.innerHTML = '<i class="bi bi-download me-1"></i> Download SHAP ZIP';
+            btn.disabled = false;
+        }
+    });
+
+    // Explanation form
+    document.getElementById('explain-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!currentSessionId) {
+            alert('Please run prediction first');
+            return;
+        }
+        const rowIndex = parseInt(document.getElementById('row-index').value) - 1;
+        if (rowIndex < 0) {
+            alert('Invalid row index');
+            return;
+        }
+        showLoading('Analyzing with AI...');
+        try {
+            const response = await fetch(`/api/explain/${currentSessionId}/${rowIndex}`);
+            if (!response.ok) {
+                let errorMsg = 'Explanation failed';
+                try {
+                    const errData = await response.json();
+                    errorMsg = errData.error || errorMsg;
+                } catch(e) {}
+                throw new Error(errorMsg);
+            }
+            const data = await response.json();
+            if (data.status === 'success') {
+                const info = data.parsed_info;
+                const explainContent = document.getElementById('explain-content');
+                const cleanExplanation = data.explanation.replace(/\*/g, '');
+                explainContent.innerHTML = `
+                    <div class="alert alert-info border-0" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 4px solid #667eea !important;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Sequence:</strong></p>
+                                <code style="word-break: break-all;">${info.sequence_preview}</code>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Prediction:</strong></p>
+                                <span class="badge bg-primary fs-6">${info.predicted}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3" style="color: #2d3748;">
+                            <i class="bi bi-lightbulb text-warning me-2"></i>Mechanistic Explanation & Validation Plan
+                        </h6>
+                        <div class="explain-content">
+                            <pre>${cleanExplanation}</pre>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-3" style="color: #2d3748;">
+                            <i class="bi bi-journal-text text-primary me-2"></i>Retrieved Knowledge Base
+                        </h6>
+                        <ul class="list-group knowledge-list">
+                            ${data.retrieved_knowledge.map(doc => `<li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>${doc}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                document.getElementById('explain-result').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('explain-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                alert('Explanation failed: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+    </script>
+</body>
+</html>
