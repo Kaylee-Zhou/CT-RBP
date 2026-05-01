@@ -49,27 +49,27 @@ Note: The output file will be located in "Visualization/PNG".
 This model achieves the following performance on the HNRNPC dataset:
 
 ```
-AUROC:       0.8681
-AUPRC:       0.8897
-Accuracy:    0.7933
-Precision:   0.8065
-Sensitivity: 0.7962
-F1-Score:    0.8013
-Specificity: 0.7902
-MCC:         0.5861
+AUROC:       0.8682
+AUPRC:       0.8747
+Accuracy:    0.802
+Precision:   0.8084
+Sensitivity: 0.8031
+F1-Score:    0.8058
+Specificity: 0.8008
+MCC:         0.6039
 ```
 
 On the U2AF2 dataset:
 
 ```
-AUROC:       0.8486
-AUPRC:       0.8724
-Accuracy:    0.7867
-Precision:   0.7627
-Sensitivity: 0.8599
-F1-Score:    0.8084
-Specificity: 0.7063
-MCC:         0.5749
+AUROC:       0.8508
+AUPRC:       0.8426
+Accuracy:    0.7767
+Precision:   0.7441
+Sensitivity: 0.8425
+F1-Score:    0.7902
+Specificity: 0.7111
+MCC:         0.5583
 ```
 
 Note: More details please check at "CT-RBP.ipynb" and "CT-RBP_Dataset2.ipynb".
